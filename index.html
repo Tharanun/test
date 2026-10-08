@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin - ระบบทะเบียนเจ้าหนี้</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--text:#172033;--muted:#64748b;--line:#e2e8f0;--blue:#2563eb;--dark:#111827;--red:#dc2626;--green:#059669}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans Thai",sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+.layout{display:flex;min-height:100vh}.side{position:fixed;left:0;top:0;bottom:0;width:245px;background:var(--dark);color:#fff;padding:20px 14px}
+.logo{font-size:20px;font-weight:800;padding:8px 10px 24px}.logo small{display:block;font-size:12px;color:#9ca3af;margin-top:5px;font-weight:400}
+.nav button{display:block;width:100%;border:0;background:transparent;color:#cbd5e1;text-align:left;padding:12px 14px;border-radius:8px;margin:3px 0}.nav button:hover,.nav button.active{background:#1f2937;color:#fff}
+.main{margin-left:245px;width:calc(100% - 245px);padding:25px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+h1,h2{margin:0}.sub{color:var(--muted);font-size:13px;margin-top:5px}
+.btn{border:0;border-radius:8px;padding:10px 14px;background:var(--blue);color:#fff;font-weight:700}.btn.gray{background:#e5e7eb;color:#111827}.btn.red{background:#fee2e2;color:#991b1b}.btn.green{background:#059669}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 4px 15px #0f172a08}.label{font-size:13px;color:var(--muted)}.number{font-size:25px;font-weight:800;margin-top:8px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px}.panel-title{font-weight:800;margin-bottom:15px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.toolbar input,.toolbar select{padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}.toolbar input{min-width:280px}
+.table{overflow:auto;border:1px solid var(--line);border-radius:10px}table{border-collapse:collapse;width:100%;min-width:900px}th,td{padding:11px 13px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}th{background:#f8fafc;color:#475569}tr:last-child td{border-bottom:0}
+.badge{padding:5px 9px;border-radius:99px;font-size:12px;font-weight:700;background:#e0e7ff;color:#3730a3}.badge.paid{background:#dcfce7;color:#166534}.badge.wait{background:#fef3c7;color:#92400e}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.modal{position:fixed;inset:0;background:#0f172a88;display:flex;align-items:center;justify-content:center;padding:20px;z-index:5}.modal.hidden{display:none}.box{background:#fff;border-radius:14px;width:min(760px,100%);max-height:92vh;overflow:auto;padding:22px}.close{float:right;border:0;background:#f1f5f9;border-radius:50%;width:32px;height:32px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}.full{grid-column:1/-1}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px}.field textarea{min-height:80px}.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.hidden{display:none!important}.list{display:grid;gap:10px}.item{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);padding:13px;border-radius:9px}.item small{display:block;color:var(--muted);margin-top:3px}
+.toast{position:fixed;right:20px;bottom:20px;background:#111827;color:#fff;padding:12px 16px;border-radius:8px;display:none}
+@media(max-width:900px){.side{width:70px}.logo span,.logo small,.nav button span{display:none}.main{margin-left:70px;width:calc(100% - 70px)}.cards{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.main{padding:15px}.cards{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.top{gap:10px;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="side">
+  <div class="logo">🏥 <span>Admin เจ้าหนี้</span><small>Prototype • ยังไม่ใช้ Database</small></div>
+  <div class="nav">
+    <button class="active" onclick="page('dashboard',this)">📊 <span>Dashboard</span></button>
+    <button onclick="page('records',this)">🧾 <span>รายการเจ้าหนี้</span></button>
+    <button onclick="page('creditors',this)">🏢 <span>เจ้าหนี้ / บริษัท</span></button>
+    <button onclick="page('categories',this)">🗂️ <span>หมวดหมู่</span></button>
+    <button onclick="page('statuses',this)">🔄 <span>สถานะ</span></button>
+    <button onclick="page('reports',this)">📈 <span>รายงาน</span></button>
+  </div>
+</aside>
+
+<main class="main">
+<div class="top">
+ <div><h1 id="title">Dashboard</h1><div class="sub">ระบบต้นแบบสำหรับพนักงานการเงินโรงพยาบาล</div></div>
+ <button class="btn" onclick="openRecord()">＋ เพิ่มรายการ</button>
+</div>
+
+<section id="dashboard">
+ <div class="cards">
+  <div class="card"><div class="label">รายการทั้งหมด</div><div class="number" id="dCount">0</div></div>
+  <div class="card"><div class="label">เจ้าหนี้ / บริษัท</div><div class="number" id="dCompany">0</div></div>
+  <div class="card"><div class="label">หมวดหมู่</div><div class="number" id="dCat">0</div></div>
+  <div class="card"><div class="label">ยอดรวมเจ้าหนี้</div><div class="number" id="dTotal">฿0.00</div></div>
+ </div>
+ <div class="panel"><div class="panel-title">รายการล่าสุด</div><div id="recent"></div></div>
+</section>
+
+<section id="records" class="hidden">
+ <div class="panel">
+  <div class="toolbar">
+   <input id="search" placeholder="ค้นหาบริษัท / เลขบิล / รายการ..." oninput="renderRecords()">
+   <select id="fCat" onchange="renderRecords()"><option value="">ทุกหมวด</option></select>
+   <select id="fStatus" onchange="renderRecords()"><option value="">ทุกสถานะ</option></select>
+  </div>
+  <div class="table" id="recordTable"></div>
+ </div>
+</section>
+
+<section id="creditors" class="hidden">
+ <div class="panel">
+  <div class="toolbar"><button class="btn" onclick="openCreditor()">＋ เพิ่มเจ้าหนี้ / บริษัท</button><input id="creditorSearch" placeholder="ค้นหาบริษัท..." oninput="renderCreditors()"></div>
+  <div id="creditorList"></div>
+ </div>
+</section>
+
+<section id="categories" class="hidden">
+ <div class="panel">
+  <div class="toolbar"><button class="btn" onclick="openCategory()">＋ เพิ่มหมวดหมู่</button></div>
+  <div id="categoryList"></div>
+ </div>
+</section>
+
+<section id="statuses" class="hidden">
+ <div class="panel">
+  <div class="toolbar"><button class="btn" onclick="openStatus()">＋ เพิ่มสถานะ</button></div>
+  <div id="statusList"></div>
+ </div>
+</section>
+
+<section id="reports" class="hidden">
+ <div class="panel"><div class="panel-title">สรุปตามหมวดหมู่</div><div id="report"></div></div>
+</section>
+</main>
+</div>
+
+<div id="modal" class="modal hidden"><div class="box"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+const K='hospital_admin_prototype_v2';
+let db=JSON.parse(localStorage.getItem(K)||'null')||{
+ creditors:[{id:uid(),name:'บริษัทตัวอย่าง จำกัด',tax:'0105555000000',phone:'02-000-0000',note:''}],
+ categories:[{id:uid(),name:'ยา'},{id:uid(),name:'วัสดุ'},{id:uid(),name:'เวชภัณฑ์'}],
+ statuses:[{id:uid(),name:'รอตรวจสอบ'},{id:uid(),name:'ตั้งหนี้แล้ว'},{id:uid(),name:'รอจ่าย'},{id:uid(),name:'จ่ายแล้ว'}],
+ records:[]
+};
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function save(){localStorage.setItem(K,JSON.stringify(db))}
+function money(n){return '฿'+Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function toast(s){let x=document.getElementById('toast');x.textContent=s;x.style.display='block';setTimeout(()=>x.style.display='none',1600)}
+function page(id,btn){
+ document.querySelectorAll('main section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
+ document.getElementById('title').textContent=btn.innerText.trim();renderAll();
+}
+function showModal(html){document.getElementById('modalContent').innerHTML=html;document.getElementById('modal').classList.remove('hidden')}
+function closeModal(){document.getElementById('modal').classList.add('hidden')}
+
+function openRecord(id=''){
+ const r=db.records.find(x=>x.id===id)||{companyId:'',categoryId:'',statusId:'',invoice:'',date:new Date().toISOString().slice(0,10),item:'',amount:0,note:''};
+ showModal(`<h2>${id?'แก้ไข':'เพิ่ม'}รายการเจ้าหนี้</h2>
+ <form onsubmit="saveRecord(event,'${id}')"><div class="formgrid">
+ <div class="field"><label>บริษัท / เจ้าหนี้ *</label><select id="rc" required><option value="">เลือกบริษัท</option>${db.creditors.map(x=>`<option value="${x.id}" ${r.companyId===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
+ <div class="field"><label>หมวดหมู่ *</label><select id="rct" required><option value="">เลือกหมวด</option>${db.categories.map(x=>`<option value="${x.id}" ${r.categoryId===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
+ <div class="field"><label>เลขที่บิล / ใบแจ้งหนี้ *</label><input id="rinv" required value="${esc(r.invoice)}"></div>
+ <div class="field"><label>วันที่ *</label><input id="rdate" type="date" required value="${r.date}"></div>
+ <div class="field full"><label>รายการ *</label><input id="ritem" required value="${esc(r.item)}"></div>
+ <div class="field"><label>จำนวนเงิน *</label><input id="ramount" type="number" min="0" step=".01" required value="${r.amount}"></div>
+ <div class="field"><label>สถานะ *</label><select id="rst" required>${db.statuses.map(x=>`<option value="${x.id}" ${r.statusId===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
+ <div class="field full"><label>หมายเหตุ</label><textarea id="rnote">${esc(r.note)}</textarea></div>
+ </div><div class="form-actions"><button type="button" class="btn gray" onclick="closeModal()">ยกเลิก</button><button class="btn">บันทึก</button></div></form>`)
+}
+function saveRecord(e,id){e.preventDefault();let r={id:id||uid(),companyId:rc.value,categoryId:rct.value,statusId:rst.value,invoice:rinv.value.trim(),date:rdate.value,item:ritem.value.trim(),amount:Number(ramount.value),note:rnote.value.trim()};let i=db.records.findIndex(x=>x.id===id);if(i>=0)db.records[i]=r;else db.records.push(r);save();closeModal();renderAll();toast(id?'แก้ไขแล้ว':'เพิ่มรายการแล้ว')}
+function delRecord(id){if(confirm('ลบรายการนี้หรือไม่?')){db.records=db.records.filter(x=>x.id!==id);save();renderAll();toast('ลบแล้ว')}}
+
+function openCreditor(id=''){let r=db.creditors.find(x=>x.id===id)||{name:'',tax:'',phone:'',note:''};showModal(`<h2>${id?'แก้ไข':'เพิ่ม'}เจ้าหนี้ / บริษัท</h2><form onsubmit="saveCreditor(event,'${id}')"><div class="formgrid">
+<div class="field full"><label>ชื่อบริษัท / เจ้าหนี้ *</label><input id="cn" required value="${esc(r.name)}"></div>
+<div class="field"><label>เลขประจำตัวผู้เสียภาษี</label><input id="ct" value="${esc(r.tax)}"></div>
+<div class="field"><label>เบอร์โทร</label><input id="cp" value="${esc(r.phone)}"></div>
+<div class="field full"><label>หมายเหตุ</label><textarea id="cm">${esc(r.note)}</textarea></div></div><div class="form-actions"><button type="button" class="btn gray" onclick="closeModal()">ยกเลิก</button><button class="btn">บันทึก</button></div></form>`)}
+function saveCreditor(e,id){e.preventDefault();let r={id:id||uid(),name:cn.value.trim(),tax:ct.value.trim(),phone:cp.value.trim(),note:cm.value.trim()};let i=db.creditors.findIndex(x=>x.id===id);if(i>=0)db.creditors[i]=r;else db.creditors.push(r);save();closeModal();renderAll();toast('บันทึกบริษัทแล้ว')}
+function delCreditor(id){if(db.records.some(x=>x.companyId===id)){alert('ลบบริษัทไม่ได้ เพราะมีรายการเจ้าหนี้ผูกอยู่');return}if(confirm('ลบบริษัทนี้หรือไม่?')){db.creditors=db.creditors.filter(x=>x.id!==id);save();renderAll()}}
+
+function openCategory(id=''){let r=db.categories.find(x=>x.id===id)||{name:''};showModal(`<h2>${id?'แก้ไข':'เพิ่ม'}หมวดหมู่</h2><form onsubmit="saveCategory(event,'${id}')"><div class="field" style="margin-top:18px"><label>ชื่อหมวดหมู่ *</label><input id="catname" required value="${esc(r.name)}" placeholder="เช่น ค่าอาหาร"></div><div class="form-actions"><button type="button" class="btn gray" onclick="closeModal()">ยกเลิก</button><button class="btn">บันทึก</button></div></form>`)}
+function saveCategory(e,id){e.preventDefault();let name=catname.value.trim();if(db.categories.some(x=>x.name.toLowerCase()===name.toLowerCase()&&x.id!==id)){alert('มีหมวดนี้แล้ว');return}let i=db.categories.findIndex(x=>x.id===id);if(i>=0)db.categories[i].name=name;else db.categories.push({id:uid(),name});save();closeModal();renderAll();toast('บันทึกหมวดแล้ว')}
+function delCategory(id){if(db.records.some(x=>x.categoryId===id)){alert('ลบไม่ได้ เพราะมีรายการใช้หมวดนี้อยู่');return}if(confirm('ลบหมวดนี้หรือไม่?')){db.categories=db.categories.filter(x=>x.id!==id);save();renderAll()}}
+
+function openStatus(id=''){let r=db.statuses.find(x=>x.id===id)||{name:''};showModal(`<h2>${id?'แก้ไข':'เพิ่ม'}สถานะ</h2><form onsubmit="saveStatus(event,'${id}')"><div class="field" style="margin-top:18px"><label>ชื่อสถานะ *</label><input id="stname" required value="${esc(r.name)}" placeholder="เช่น รอเอกสาร"></div><div class="form-actions"><button type="button" class="btn gray" onclick="closeModal()">ยกเลิก</button><button class="btn">บันทึก</button></div></form>`)}
+function saveStatus(e,id){e.preventDefault();let name=stname.value.trim();let i=db.statuses.findIndex(x=>x.id===id);if(i>=0)db.statuses[i].name=name;else db.statuses.push({id:uid(),name});save();closeModal();renderAll();toast('บันทึกสถานะแล้ว')}
+function delStatus(id){if(db.records.some(x=>x.statusId===id)){alert('ลบไม่ได้ เพราะมีรายการใช้สถานะนี้อยู่');return}if(confirm('ลบสถานะนี้หรือไม่?')){db.statuses=db.statuses.filter(x=>x.id!==id);save();renderAll()}}
+
+function renderDashboard(){
+ dCount.textContent=db.records.length;dCompany.textContent=db.creditors.length;dCat.textContent=db.categories.length;dTotal.textContent=money(db.records.reduce((a,x)=>a+x.amount,0));
+ let rs=[...db.records].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+ recent.innerHTML=rs.length?`<div class="table"><table><thead><tr><th>วันที่</th><th>บริษัท</th><th>เลขที่บิล</th><th>หมวด</th><th>รายการ</th><th>ยอดเงิน</th><th>สถานะ</th></tr></thead><tbody>${rs.map(x=>`<tr><td>${x.date}</td><td>${esc(getCred(x.companyId))}</td><td>${esc(x.invoice)}</td><td>${esc(getCat(x.categoryId))}</td><td>${esc(x.item)}</td><td>${money(x.amount)}</td><td><span class="badge">${esc(getStatus(x.statusId))}</span></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">ยังไม่มีรายการ</div>'
+}
+function renderRecords(){
+ let fc=fCat.value;fCat.innerHTML='<option value="">ทุกหมวด</option>'+db.categories.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');fCat.value=fc;
+ let fs=fStatus.value;fStatus.innerHTML='<option value="">ทุกสถานะ</option>'+db.statuses.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');fStatus.value=fs;
+ let q=(search.value||'').toLowerCase(),rows=db.records.filter(x=>(!q||[getCred(x.companyId),x.invoice,x.item].some(v=>v.toLowerCase().includes(q)))&&(!fCat.value||x.categoryId===fCat.value)&&(!fStatus.value||x.statusId===fStatus.value)).sort((a,b)=>b.date.localeCompare(a.date));
+ recordTable.innerHTML=rows.length?`<table><thead><tr><th>วันที่</th><th>บริษัท</th><th>เลขบิล</th><th>หมวด</th><th>รายการ</th><th>เงิน</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.date}</td><td>${esc(getCred(x.companyId))}</td><td>${esc(x.invoice)}</td><td>${esc(getCat(x.categoryId))}</td><td>${esc(x.item)}</td><td>${money(x.amount)}</td><td><span class="badge">${esc(getStatus(x.statusId))}</span></td><td><button class="btn gray" onclick="openRecord('${x.id}')">แก้ไข</button> <button class="btn red" onclick="delRecord('${x.id}')">ลบ</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">ไม่พบข้อมูล</div>'
+}
+function renderCreditors(){
+ let q=(creditorSearch.value||'').toLowerCase();let rows=db.creditors.filter(x=>x.name.toLowerCase().includes(q));
+ creditorList.innerHTML=rows.length?'<div class="list">'+rows.map(x=>{let rs=db.records.filter(r=>r.companyId===x.id);let total=rs.reduce((a,r)=>a+r.amount,0);return `<div class="item"><div><b>${esc(x.name)}</b><small>${rs.length} รายการ · ${money(total)} · โทร ${esc(x.phone||'-')}</small></div><div><button class="btn gray" onclick="openCreditor('${x.id}')">แก้ไข</button> <button class="btn red" onclick="delCreditor('${x.id}')">ลบ</button></div></div>`}).join('')+'</div>':'<div class="empty">ยังไม่มีบริษัท</div>'
+}
+function renderCategories(){categoryList.innerHTML='<div class="list">'+db.categories.map(x=>`<div class="item"><div><b>${esc(x.name)}</b><small>${db.records.filter(r=>r.categoryId===x.id).length} รายการ</small></div><div><button class="btn gray" onclick="openCategory('${x.id}')">แก้ไข</button> <button class="btn red" onclick="delCategory('${x.id}')">ลบ</button></div></div>`).join('')+'</div>'}
+function renderStatuses(){statusList.innerHTML='<div class="list">'+db.statuses.map(x=>`<div class="item"><b>${esc(x.name)}</b><div><button class="btn gray" onclick="openStatus('${x.id}')">แก้ไข</button> <button class="btn red" onclick="delStatus('${x.id}')">ลบ</button></div></div>`).join('')+'</div>'}
+function renderReports(){let html=db.categories.map(c=>{let rs=db.records.filter(x=>x.categoryId===c.id),v=rs.reduce((a,x)=>a+x.amount,0);return `<tr><td>${esc(c.name)}</td><td>${rs.length}</td><td>${money(v)}</td><td>${money(rs.filter(x=>getStatus(x.statusId)!=='จ่ายแล้ว').reduce((a,x)=>a+x.amount,0))}</td></tr>`}).join('');report.innerHTML=`<div class="table"><table><thead><tr><th>หมวด</th><th>จำนวนรายการ</th><th>ยอดรวม</th><th>ค้างจ่าย</th></tr></thead><tbody>${html}</tbody></table></div>`}
+function getCred(id){return db.creditors.find(x=>x.id===id)?.name||'ไม่ระบุ'}
+function getCat(id){return db.categories.find(x=>x.id===id)?.name||'ไม่ระบุ'}
+function getStatus(id){return db.statuses.find(x=>x.id===id)?.name||'ไม่ระบุ'}
+function renderAll(){renderDashboard();renderRecords();renderCreditors();renderCategories();renderStatuses();renderReports()}
+renderAll();
+</script>
+</body>
+</html>
